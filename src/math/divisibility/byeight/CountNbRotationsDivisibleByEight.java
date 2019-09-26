@@ -19,27 +19,24 @@ public class CountNbRotationsDivisibleByEight {
 
 	private static int countRotations(char[] digits) {
 		int numLength = digits.length;
-		// Empty String.
 		if (numLength == 0) {
 			return 0;
 		}
-		// Single Digit.
 		if (numLength == 1) {
-			return toInt(digits[0]) % 4 == 0 ? 1 : 0;
-		} else if (numLength == 2) {
-			int tens = toInt(digits[1]);
-			int units = toInt(digits[0]);
+			return toInt(digits[0]) % 8 == 0 ? 1 : 0;
+		} else if (numLength == 2) { // two-digit numbers
+			int fstPair = toInt(digits[1]) * 10 + toInt(digits[0]);
+			int sndPair = toInt(digits[0]) * 10 + toInt(digits[1]);
 
 			int nbRotations = 0;
-			if ((tens * 10 + units) % 8 == 0) {
+			if (fstPair % 8 == 0) {
 				nbRotations++;
 			}
-			if ((units * 10 + tens) % 8 == 0) {
+			if (sndPair % 8 == 0) {
 				nbRotations++;
 			}
 			return nbRotations;
 		} else {
-
 			int count = 0;
 			int cents, tens, units;
 			for (int index = 0; index <= numLength - 3; index++) {

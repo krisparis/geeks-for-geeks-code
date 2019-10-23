@@ -1,6 +1,7 @@
 package dynamicprog;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -34,7 +35,7 @@ public class CountWaysForUniqueCapToEveryPerson {
 
 	private static int[][] nbWaysForMaskFromCap = new int[1025][NB_DISTINCT_CAPS + 1];
 
-	private static Map<Integer, List<Integer>> ownersPerCap;
+	private static Map<Integer, List<Integer>> ownersPerCap = new HashMap<Integer, List<Integer>>();
 
 	private static final int ARRAY_ELT_INIT_VALUE = -1;
 
@@ -42,22 +43,17 @@ public class CountWaysForUniqueCapToEveryPerson {
 		String[] capsPerPerson = { "5 100 1", "2", "5 100" };
 
 		int res = countWays(capsPerPerson);
-
+		System.out.println("Resultats: " + res);
 	}
 
 	private static int countWays(String[] capsPerPerson) {
 		initFromCapCollections(capsPerPerson);
-
 		return countWaysFromParticipantsMaskAndStartingCap(0, 1);
 	}
 
 	private static void initFromCapCollections(String[] capsPerPerson) {
 		nbOfPartipants = capsPerPerson.length;
-		int nbOfMaskCombinations = (int) Math.pow(2, nbOfPartipants);
-
-		// For simplicity we are not going to use index 0.
-		// This array will store value from index 1.
-		nbWaysForMaskFromCap = new int[nbOfMaskCombinations + 1][NB_DISTINCT_CAPS + 1];
+		initArrayOfWays();
 
 		// In binary numeral system, (1 << n) is written with one "1" and then n "0"s.
 		// So (1 << n) - 1 is n "1"
@@ -90,7 +86,23 @@ public class CountWaysForUniqueCapToEveryPerson {
 				maskEntry[capNum] = ARRAY_ELT_INIT_VALUE;
 			}
 		}
+	}
 
+	private static void initArrayOfWays() {
+		// For instance, if there are 3 participants, nbOfPartipants = 3.
+		// There should be 2^3 = 8 possible combinations.
+		// Combinations are : 000, 001, 010, 011, 100, 101, 110, 111
+		int nbOfMaskCombinations = (int) Math.pow(2, nbOfPartipants);
+
+		// For simplicity we are not going to use index 0.
+		// This array will store value from index 1.
+
+		// Initialize the array that for the element [i][j] stores the number of ways to
+		// distribute caps starting from j among participants represented by the ith
+		// mask.
+		// For convenience purposes, we store values in elements with indexes greater
+		// than 1.
+		nbWaysForMaskFromCap = new int[nbOfMaskCombinations + 1][NB_DISTINCT_CAPS + 1];
 	}
 
 	private static int countWaysFromParticipantsMaskAndStartingCap(int processedParticipantsMask, int capNum) {

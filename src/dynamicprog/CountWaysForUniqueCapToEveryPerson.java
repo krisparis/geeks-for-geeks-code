@@ -56,7 +56,7 @@ public class CountWaysForUniqueCapToEveryPerson {
 		initArrayOfWays();
 
 		// In binary numeral system, (1 << n) is written with one "1" and then n "0"s.
-		// So (1 << n) - 1 is n "1"
+		// So (1 << n) - 1 1....1 (with n "1")
 		// For instance, (1 << 2) is 100 (4 in decimal form) and [(1 << 2) - 1] is 11 (3
 		// in decimal form).
 		allParticipantsWithCapMask = (1 << nbOfPartipants) - 1;
@@ -94,11 +94,9 @@ public class CountWaysForUniqueCapToEveryPerson {
 		// Combinations are : 000, 001, 010, 011, 100, 101, 110, 111
 		int nbOfMaskCombinations = (int) Math.pow(2, nbOfPartipants);
 
-		// For simplicity we are not going to use index 0.
-		// This array will store value from index 1.
 
 		// Initialize the array that for the element [i][j] stores the number of ways to
-		// distribute caps starting from j among participants represented by the ith
+		// distribute caps starting from cap j among participants represented by the ith
 		// mask.
 		// For convenience purposes, we store values in elements with indexes greater
 		// than 1.

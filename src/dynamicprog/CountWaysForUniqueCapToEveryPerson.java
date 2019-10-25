@@ -7,7 +7,7 @@ import java.util.Map;
 
 /**
  * <p>
- * 100 different types of caps.
+ * There are 100 different possible types of caps.
  * </p>
  * <p>
  * there are ‘n’ persons each having a collection of a variable number of caps
@@ -27,13 +27,15 @@ import java.util.Map;
  */
 public class CountWaysForUniqueCapToEveryPerson {
 
-	private static final int NB_DISTINCT_CAPS = 100;
+	private static final int MOD = 1000000007;
+	 
+	private static final int NB_MAX_POSSIBLE_DISTINCT_CAPS = 100;
 
 	private static int nbOfPartipants;
 
 	private static int allParticipantsWithCapMask;
 
-	private static int[][] nbWaysForMaskFromCap = new int[1025][NB_DISTINCT_CAPS + 1];
+	private static int[][] nbWaysForMaskFromCap = new int[1025][NB_MAX_POSSIBLE_DISTINCT_CAPS + 1];
 
 	private static Map<Integer, List<Integer>> ownersPerCap = new HashMap<Integer, List<Integer>>();
 
@@ -48,19 +50,44 @@ public class CountWaysForUniqueCapToEveryPerson {
 
 	private static int countWays(String[] capsPerPerson) {
 		initFromCapCollections(capsPerPerson);
-		return countWaysFromParticipantsMaskAndStartingCap(0, 1);
+		return countArrangementsFromParticipantsMaskAndStartingCap(0, 1);
 	}
 
 	private static void initFromCapCollections(String[] capsPerPerson) {
 		nbOfPartipants = capsPerPerson.length;
+		initAllParticipantsMask();
 		initArrayOfWays();
+		initMapCapToOwners(capsPerPerson);
+	}
 
+	private static void initAllParticipantsMask() {
 		// In binary numeral system, (1 << n) is written with one "1" and then n "0"s.
 		// So (1 << n) - 1 1....1 (with n "1")
 		// For instance, (1 << 2) is 100 (4 in decimal form) and [(1 << 2) - 1] is 11 (3
 		// in decimal form).
 		allParticipantsWithCapMask = (1 << nbOfPartipants) - 1;
+	}
 
+	private static void initArrayOfWays() {
+		// For instance, if there are 3 participants, nbOfPartipants = 3.
+		// There should be 2^3 = 8 possible combinations.
+		// Combinations are : 000, 001, 010, 011, 100, 101, 110, 111
+		int nbOfMaskCombinations = (int) Math.pow(2, nbOfPartipants);
+
+		// Initialize the array that for the element [i][j] stores the number of ways to
+		// distribute caps starting from cap j among participants represented by the ith
+		// mask.
+		// For convenience purposes, we store values in elements with indexes greater
+		// than 1.
+		nbWaysForMaskFromCap = new int[nbOfMaskCombinations + 1][NB_MAX_POSSIBLE_DISTINCT_CAPS + 1];
+		for (int[] maskEntry : nbWaysForMaskFromCap) {
+			for (int capNum = 0; capNum < maskEntry.length; capNum++) {
+				maskEntry[capNum] = ARRAY_ELT_INIT_VALUE;
+			}
+		}
+	}
+
+	private static void initMapCapToOwners(String[] capsPerPerson) {
 		String str;
 		String split[];
 		int x;
@@ -78,32 +105,10 @@ public class CountWaysForUniqueCapToEveryPerson {
 				}
 				ownersPerCap.get(x).add(participantId);
 			}
-
-		}
-
-		for (int[] maskEntry : nbWaysForMaskFromCap) {
-			for (int capNum = 0; capNum < maskEntry.length; capNum++) {
-				maskEntry[capNum] = ARRAY_ELT_INIT_VALUE;
-			}
 		}
 	}
 
-	private static void initArrayOfWays() {
-		// For instance, if there are 3 participants, nbOfPartipants = 3.
-		// There should be 2^3 = 8 possible combinations.
-		// Combinations are : 000, 001, 010, 011, 100, 101, 110, 111
-		int nbOfMaskCombinations = (int) Math.pow(2, nbOfPartipants);
-
-
-		// Initialize the array that for the element [i][j] stores the number of ways to
-		// distribute caps starting from cap j among participants represented by the ith
-		// mask.
-		// For convenience purposes, we store values in elements with indexes greater
-		// than 1.
-		nbWaysForMaskFromCap = new int[nbOfMaskCombinations + 1][NB_DISTINCT_CAPS + 1];
-	}
-
-	private static int countWaysFromParticipantsMaskAndStartingCap(int processedParticipantsMask, int capNum) {
+	private static int countArrangementsFromParticipantsMaskAndStartingCap(int processedParticipantsMask, int capNum) {
 		// If all participants are wearing a cap then counting is done.
 		// This is one way so return 1.
 		if (processedParticipantsMask == allParticipantsWithCapMask) {
@@ -111,15 +116,42 @@ public class CountWaysForUniqueCapToEveryPerson {
 		}
 		// If not everyone is wearing a cap and also there are no more
 		// caps left to process, so there is no way, thus return 0;
-		if (capNum > NB_DISTINCT_CAPS) {
+		if (capNum > NB_MAX_POSSIBLE_DISTINCT_CAPS) {
 			return 0;
 		}
 		// If we already have solved this subproblem, return the answer.
 		if (nbWaysForMaskFromCap[processedParticipantsMask][capNum] != ARRAY_ELT_INIT_VALUE) {
 			return nbWaysForMaskFromCap[processedParticipantsMask][capNum];
 		}
+		// Calculate number of possible arrangements without cap with id capNum
+		int arrangements = countArrangementsFromParticipantsMaskAndStartingCap(processedParticipantsMask, capNum + 1);
 
-		return -1;
+		List<Integer> capCandidates = ownersPerCap.get(capNum);
+		int nbCapCandidates = capCandidates.size();
+		for (int i = 0; i < nbCapCandidates; i++) {
+			int participantId = capCandidates.get(i);
+			if (!isPartipantAlreadyWearingACap(processedParticipantsMask, participantId)) {
+				int maskWithParticipantMarked = markPartipantAsWearingACap(processedParticipantsMask, participantId);
+				arrangements += countArrangementsFromParticipantsMaskAndStartingCap(maskWithParticipantMarked , capNum + 1);
+				
+				arrangements %= MOD;
+			}
+		}
+		nbWaysForMaskFromCap[processedParticipantsMask][capNum] = arrangements;
+		return arrangements;
 	}
 
+	private static boolean isPartipantAlreadyWearingACap(int processedParticipantsMask, int participantId) {
+		int maskWithOnlyParticpantSet = 1 << participantId;
+		int comparisonOfMasks = processedParticipantsMask & maskWithOnlyParticpantSet;
+		
+		// If the bit for the participant is already set to 1 then the participant already have a cap.
+		return comparisonOfMasks != 0;
+	}
+
+	private static int markPartipantAsWearingACap (int processedParticipantsMask,int participantId) {
+		int maskWithOnlyParticpantSet = 1 << participantId;		
+		return processedParticipantsMask | maskWithOnlyParticpantSet;
+	}
+	
 }

@@ -62,15 +62,23 @@ public class UglyNumberMethod1 {
 	
     /* Function to get the nth ugly  
     number*/
-	static int getNthUglyNoWithMethod1() {
-		return 0;
+	static int getNthUglyNoWithMethod1(int n) {
+		
+		int uglyNumberCount = 0;
+		int number = 0;
+		
+		while (uglyNumberCount < n) {
+			number ++;
+			if (isUgly(number)) {
+				uglyNumberCount ++;
+			}			
+		}
+		return number;
 	}
 	
 	public static void main(String[] args) {
-		int n = 300;
-		boolean result = isUgly(n);
-		System.out.println("IsUgly ("+n+"): " + result);
-		
+		int n = 150;
+		int result = getNthUglyNoWithMethod1(n);
+		System.out.println(n+"th ugly number is: " + result); // Expected result for 150 is 5832.		
 	}
-
 }

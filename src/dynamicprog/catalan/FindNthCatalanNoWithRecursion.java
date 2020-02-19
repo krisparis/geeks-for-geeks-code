@@ -24,21 +24,50 @@ package dynamicprog.catalan;
  * 
  * </p>
  */
-public class FindNthCatalanNoWithRecursion {
+public class FindNthCatalanNoWithDP {
 
-	private static int catalan(int n) {
+	private static int[] calculatedNumbers;
+
+	private static int catalanWithTabulation(int n) {
 		if (n <= 1) {
 			return 1;
 		}
+		calculatedNumbers[0] = 1;
+		calculatedNumbers[1] = 1;
+
+		for (int i = 2; i <= n; i++) {
+			int sum = 0;
+			for (int j = 0; j < i; j++) {
+				sum += calculatedNumbers[j] * calculatedNumbers[i - 1 - j];
+			}
+			calculatedNumbers[i] = sum;
+		}
+		return calculatedNumbers[n];
+	}
+
+	private static int catalanWithMemoization(int n) {
+		if (n <= 1) {
+			return 1;
+		}
+		if (calculatedNumbers[n] != 0) {
+			return calculatedNumbers[n];
+		}
+
 		int sum = 0;
 		for (int i = 0; i < n; i++) {
-			sum += catalan(i) * catalan(n - 1 - i);
+			sum += catalanWithMemoization(i) * catalanWithMemoization(n - 1 - i);
 		}
+		calculatedNumbers[n] = sum;
 		return sum;
 	}
 
 	public static void main(String[] args) {
-		System.out.println(catalan(9)); // Expected output 4862 for input 9.
+		int n = 9;
+		calculatedNumbers = new int[n + 1];
+		System.out.println("With memoization " + catalanWithMemoization(n)); // Expected output 4862 for input 9.
+
+		calculatedNumbers = new int[n + 1];
+		System.out.println("With tabulation " + catalanWithTabulation(n)); // Expected output 4862 for input 9.
 	}
 
 }
